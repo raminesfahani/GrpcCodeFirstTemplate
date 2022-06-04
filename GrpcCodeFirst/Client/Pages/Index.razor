@@ -1,0 +1,72 @@
+﻿@page "/"
+@using GrpcCodeFirst.Client.Services
+@using Microsoft.Extensions.Logging
+@using Contract.Models
+@inject ILogger<Index> Logger
+@inject AuthenticationServices _authenticationServices
+
+
+<PageTitle>Index</PageTitle>
+
+<h1>Hello, world!</h1>
+
+Welcome to your new app.
+
+@if (message != string.Empty)
+{
+    <div style="padding: 10px; margin-bottom: 15px; margin-top: 15px; border: 1px solid black;">@message</div>
+}
+
+
+<EditForm Model="@userInformation" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator/>
+    <ValidationSummary/>
+    <div style="margin-bottom: 15px">
+        Firstname:
+        <InputText id="@nameof(UserInformation.FirstName)" @bind-Value="userInformation.FirstName"/>
+    </div>
+    
+    <div style="margin-bottom: 15px">
+        Lastname:
+        <InputText id="@nameof(UserInformation.LastName)" @bind-Value="userInformation.LastName"/>
+    </div>
+    
+    <div style="margin-bottom: 15px">
+        Password:
+        <InputText id="@nameof(UserInformation.Password)" @bind-Value="userInformation.Password"/>
+    </div>
+    
+    <div style="margin-bottom: 15px">
+        Age:
+        <InputNumber id="@nameof(UserInformation.Age)" @bind-Value="userInformation.Age"/>
+    </div>
+
+
+    <button type="submit">Submit</button>
+</EditForm>
+
+
+@code {
+    private string message = string.Empty;
+    private UserInformation userInformation = new();
+
+    private async Task HandleValidSubmit()
+    {
+        message = String.Empty;
+        
+        Logger.LogInformation("Submit user information");
+    
+        try
+        {
+            Response response = await _authenticationServices.CreateUser(userInformation);
+            Console.WriteLine($"Response is {response.Success.ToString()}");
+            message = ( response.Success == false ? "Please provide correct information" : "User successfully created;");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            message = "There are some unknown error on saving user information.";
+        }
+    }
+
+}
